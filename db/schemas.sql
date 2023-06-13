@@ -7,19 +7,16 @@ CREATE TABLE department (
     id INT PRIMARY KEY NOT NULL AUTO_INCREMENT UNIQUE,
     dept_name VARCHAR(255) NOT NULL
 );
-
 CREATE TABLE roles (
-    id INT PRIMARY KEY NOT NULL,
+    id INT PRIMARY KEY NOT NULL AUTO_INCREMENT UNIQUE,
     title VARCHAR(255) NOT NULL,
-    salary DECIMAL NOT NULL,
-    dept_id INT NOT NULL,
-    FOREIGN KEY(dept_id) REFERENCES department(id)
+    salary DECIMAL(10, 2) NOT NULL,
+    department_name VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE employees (
-    id INT NOT NULL,
+    id INT PRIMARY KEY NOT NULL AUTO_INCREMENT UNIQUE,
     first_name VARCHAR(255) NOT NULL,
-    last_name VARCHAR(255) NOT NULL,
-    role_id INT NOT NULL,
-    FOREIGN KEY(role_id) REFERENCES roles(id)
+    last_name VARCHAR(255) NOT NULL, 
+    role_id INT NOT NULL
 );

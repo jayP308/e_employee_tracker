@@ -2,6 +2,81 @@ const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const tableTemp = require('console.table');
 
+// Creating connection with inquirer to database
+const connection = mysql.createConnection (
+    {
+        host: 'localhost',
+        user: 'root',
+        password: 'password',
+        database: 'employee_tracker'
+    }
+);
+
+function departmentChoice() {
+    const query1 = 'SELECT * FROM department;';
+
+    connection.query(query1, (err, results) => {
+        if (err) {
+            console.error('Error fetching data:', err);
+            return;
+          }
+        const choice = results.map((row) => row.dept_name);
+
+        inquirer.prompt([
+            {
+                name: 'job_title',
+                message: 'What is the job title?',
+                type: 'input',
+                validate: (value) => {
+                    if(value){
+                        return true;
+                    } else {
+                        return 'Cannot be blank!. Please Try Typing again';
+                    }
+                }
+            },
+            {
+                name: 'salary',
+                message: 'What is the salary for this job title?',
+                type: 'input',
+                validate: (value) => {
+                    if(value){
+                        return true;
+                    } else {
+                        return 'Cannot be blank!. Please Try Typing again';
+                    }
+                }
+            },
+            {
+                name: 'selectedChoice',
+                message: 'What department that this job title belongs to?',
+                type: 'list',
+                choices: choice
+            }
+        ]).then((input)=>{
+            const query = `INSERT INTO roles(title, salary, department_name) VALUES ('${input.job_title}', ${input.salary}, '${input.selectedChoice}');`;
+
+            connection.query(query, (err, results) => {
+                if (err) {
+                    console.error('Error inserting data:', err);
+                    return;
+                  }
+                console.log('Role Added!');
+                inquirer.prompt([
+                    {
+                        name: 'return',
+                        message: 'Press Enter To Go Back to Main Menu'
+                    }]).then((enter)=> {
+                        return promptCategories();
+                    })
+            });
+        }).catch((err) => {
+            console.error('Error during role insertion:', err);
+            promptCategories(); // Go back to the main menu
+          });
+    });
+}
+
 const questionPrompt = [
     {
         name: 'employee_tracker',
@@ -21,7 +96,6 @@ const questionPrompt = [
 function promptCategories() {
     
     return inquirer.prompt(questionPrompt).then((input) => {
-        // Creating connection with inquirer to database
         const connection = mysql.createConnection (
             {
                 host: 'localhost',
@@ -30,7 +104,6 @@ function promptCategories() {
                 database: 'employee_tracker'
             }
         );
-
         // Viewing all employees table
         if(input.employee_tracker == "View all Employees"){
 
@@ -72,12 +145,18 @@ function promptCategories() {
                 }
                 const table = tableTemp.getTable(results)
                 console.log(table);
-                connection.end();
+                inquirer.prompt([
+                    {
+                        name: 'return',
+                        message: 'Press Enter To Go Back to Main Menu'
+                    }]).then((enter)=> {
+                        return promptCategories();
+                    })
             })
         } 
 
         if(input.employee_tracker == "Add Role"){
-            console.log('Adding Role!');
+            departmentChoice(); // Call the function here 
         } 
 
         // Viewing all departments
@@ -144,4 +223,3 @@ function promptCategories() {
 }
 
 promptCategories();
-
