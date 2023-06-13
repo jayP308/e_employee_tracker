@@ -65,9 +65,15 @@ function departmentChoice() {
                 inquirer.prompt([
                     {
                         name: 'return',
-                        message: 'Press Enter To Go Back to Main Menu'
+                        message: 'Would you like to add another role?',
+                        type: 'list',
+                        choices: ['Yes', 'No']
                     }]).then((enter)=> {
+                        if(enter.return == 'Yes'){
+                            departmentChoice();
+                        } else {
                         return promptCategories();
+                        }
                     })
             });
         }).catch((err) => {
@@ -76,6 +82,47 @@ function departmentChoice() {
           });
     });
 }
+
+function addingDepartment() {
+
+        // Prompting user to add a new department
+        
+            inquirer.prompt ([
+                {
+                    name: 'adding_department',
+                    message: 'What is the name of the department you like to add?',
+                    type: 'input',
+                    validate: (value) => {
+                        if(value){
+                            return true
+                        } else {
+                            return 'Cannot be blank!. Please Try Typing again'
+                        }
+                    }
+                }]).then((input) => {
+                    const query = `INSERT INTO department(dept_name) VALUES ('${input.adding_department}');`;
+
+                    connection.query(query, (err, results) => {
+                        if (err) {
+                            console.log('error!');
+                        }
+                        console.log('Department Added!');
+                        inquirer.prompt([
+                            {
+                                name: 'return',
+                                message: 'Would you like to add another department?',
+                                type: 'list',
+                                choices: ['Yes', 'No']
+                            }]).then((enter)=> {
+                                if(enter.return == 'Yes'){
+                                    addingDepartment();
+                                } else {
+                                return promptCategories();
+                                }
+                            })
+                    });
+                })
+            }
 
 const questionPrompt = [
     {
@@ -180,38 +227,9 @@ function promptCategories() {
             })
         } 
 
-        // Prompting user to add a new department
         if(input.employee_tracker == "Add Department"){
-            inquirer.prompt ([
-                {
-                    name: 'adding_department',
-                    message: 'What is the name of the department you like to add?',
-                    type: 'input',
-                    validate: (value) => {
-                        if(value){
-                            return true
-                        } else {
-                            return 'Cannot be blank!. Please Try Typing again'
-                        }
-                    }
-                }]).then((input) => {
-                    const query = `INSERT INTO department(dept_name) VALUES ('${input.adding_department}');`;
-
-                    connection.query(query, (err, results) => {
-                        if (err) {
-                            console.log('error!');
-                        }
-                        console.log('Department Added!');
-                        inquirer.prompt([
-                            {
-                                name: 'return',
-                                message: 'Press Enter To Go Back to Main Menu'
-                            }]).then((enter)=> {
-                                return promptCategories();
-                            })
-                    });
-                })
-        } 
+            addingDepartment();
+        }
 
         // Completely exiting the program!
         if(input.employee_tracker == "Exit"){
