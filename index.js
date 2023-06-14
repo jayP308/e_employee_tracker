@@ -2,6 +2,7 @@ const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const tableTemp = require('console.table');
 
+
 // Creating connection with inquirer to database
 const connection = mysql.createConnection (
     {
@@ -14,76 +15,80 @@ const connection = mysql.createConnection (
 
 // function for adding new role
 function departmentChoice() {
-    const query1 = 'SELECT * FROM department;';
-
+    const query1 = 'SELECT id, dept_name FROM department;';
+  
     connection.query(query1, (err, results) => {
-        if (err) {
-            console.error('Error fetching data:', err);
-            return;
-          }
-        const choice = results.map((row) => row.dept_name);
-
-        inquirer.prompt([
-            {
-                name: 'job_title',
-                message: 'What is the job title?',
-                type: 'input',
-                validate: (value) => {
-                    if(value){
-                        return true;
-                    } else {
-                        return 'Cannot be blank!. Please Try Typing again';
-                    }
-                }
-            },
-            {
-                name: 'salary',
-                message: 'What is the salary for this job title?',
-                type: 'input',
-                validate: (value) => {
-                    if(value){
-                        return true;
-                    } else {
-                        return 'Cannot be blank!. Please Try Typing again';
-                    }
-                }
-            },
-            {
-                name: 'selectedChoice',
-                message: 'What department that this job title belongs to?',
-                type: 'list',
-                choices: choice
+      if (err) {
+        console.error('Error fetching data:', err);
+        return;
+      }
+      const choice = results.map((row) => ({
+        value: row.id,
+        name: row.dept_name
+      }));
+  
+      inquirer.prompt([
+        {
+          name: 'job_title',
+          message: 'What is the job title?',
+          type: 'input',
+          validate: (value) => {
+            if (value) {
+              return true;
+            } else {
+              return 'Cannot be blank!. Please try typing again';
             }
-        ]).then((input)=>{
-            const query = `INSERT INTO roles(title, salary, department_name) VALUES ('${input.job_title}', ${input.salary}, '${input.selectedChoice}');`;
-
-            connection.query(query, (err, results) => {
-                if (err) {
-                    console.error('Error inserting data:', err);
-                    return;
-                  }
-                console.log('Role Added!');
-                inquirer.prompt([
-                    {
-                        name: 'return',
-                        message: 'Would you like to add another role?',
-                        type: 'list',
-                        choices: ['Yes', 'No']
-                    }]).then((enter)=> {
-                        if(enter.return == 'Yes'){
-                            departmentChoice();
-                        } else {
-                        return promptCategories();
-                        }
-                    })
-            });
-        }).catch((err) => {
-            console.error('Error during role insertion:', err);
-            promptCategories(); // Go back to the main menu
+          }
+        },
+        {
+          name: 'salary',
+          message: 'What is the salary for this job title?',
+          type: 'input',
+          validate: (value) => {
+            if (value) {
+              return true;
+            } else {
+              return 'Cannot be blank!. Please try typing again';
+            }
+          }
+        },
+        {
+          name: 'selectedChoice',
+          message: 'What department does this job title belong to?',
+          type: 'list',
+          choices: choice
+        }
+      ]).then((input) => {
+        const query = `INSERT INTO roles(title, salary, department_id) VALUES ('${input.job_title}', ${input.salary}, ${input.selectedChoice});`;
+  
+        connection.query(query, (err, results) => {
+          if (err) {
+            console.error('Role already exist! Please try again!');
+          } else {
+          console.log('Role Added!');
+          }
+          inquirer.prompt([
+            {
+              name: 'return',
+              message: 'Would you like to add another role?',
+              type: 'list',
+              choices: ['Yes', 'No']
+            }
+          ]).then((enter) => {
+            if (enter.return === 'Yes') {
+              departmentChoice();
+            } else {
+              return promptCategories();
+            }
           });
+        });
+      }).catch((err) => {
+        console.error('Error during role insertion:', err);
+        promptCategories(); // Go back to the main menu
+      });
     });
-}
-
+  }
+  
 // function for adding new department
 function addingDepartment() {
 
@@ -106,9 +111,10 @@ function addingDepartment() {
 
                     connection.query(query, (err, results) => {
                         if (err) {
-                            console.log('error!');
-                        }
+                            console.log('Department already exist! Please Try Again!');
+                        } else {
                         console.log('Department Added!');
+                        }
                         inquirer.prompt([
                             {
                                 name: 'return',
@@ -126,16 +132,91 @@ function addingDepartment() {
                 })
             }
 
+// function for updating employee
+function updatingEmployee() {
+    const employeesQuery = 'SELECT id, first_name, last_name FROM employees;';
+    const rolesQuery = 'SELECT id, title FROM roles;';
+  
+    connection.query(employeesQuery, (err, employeesResults) => {
+      if (err) {
+        console.error('Error fetching employees:', err);
+        return;
+      }
+  
+      const employeesChoices = employeesResults.map((employee) => ({
+        value: employee.id,
+        name: `${employee.first_name} ${employee.last_name}`
+      }));
+  
+      connection.query(rolesQuery, (err, rolesResults) => {
+        if (err) {
+          console.error('Error fetching roles:', err);
+          return;
+        }
+  
+        const rolesChoices = rolesResults.map((role) => ({
+          value: role.id,
+          name: role.title
+        }));
+  
+        inquirer.prompt([
+          {
+            name: 'employee_id',
+            message: 'Select the employee to update:',
+            type: 'list',
+            choices: employeesChoices
+          },
+          {
+            name: 'new_role_id',
+            message: 'Select the new role:',
+            type: 'list',
+            choices: rolesChoices
+          }
+        ]).then((input) => {
+          const updateQuery = `UPDATE employees SET role_id = ${input.new_role_id} WHERE id = ${input.employee_id};`;
+  
+          connection.query(updateQuery, (err, results) => {
+            if (err) {
+              console.error('Error updating data:', err);
+              return;
+            }
+  
+            console.log('Employee role updated!');
+            inquirer.prompt([
+                {
+                    name: 'return',
+                    message: 'Would you like to update another employees role?',
+                    type: 'list',
+                    choices: ['Yes', 'No']
+                }]).then((enter)=> {
+                    if(enter.return == 'Yes'){
+                        updatingEmployee();
+                    } else {
+                    return promptCategories();
+                    }
+                })
+          });
+        }).catch((err) => {
+          console.error('Error during employee role update:', err);
+          promptCategories(); // Go back to the main menu
+        });
+      });
+    });
+  }
+  
 // function for adding new employee
 function addingEmployee () {
-    const query1 = 'SELECT * FROM roles;';
+    const query1 = 'SELECT id, title FROM roles;';
 
     connection.query(query1, (err, results) => {
         if (err) {
             console.error('Error fetching data:', err);
             return;
           }
-        const choice = results.map((row) => row.title);
+          const choice = results.map((row) => ({
+            value: row.id,
+            name: row.title
+          }));
 
         inquirer.prompt([
             {
@@ -181,7 +262,7 @@ function addingEmployee () {
                 }
             }
         ]).then((input)=>{
-            const query = `INSERT INTO employees(first_name, last_name, role_name, manager_name) VALUES ('${input.first_name}', '${input.last_name}', '${input.title}', '${input.manager_name}');`;
+            const query = `INSERT INTO employees(first_name, last_name, role_id, manager_name) VALUES ('${input.first_name}', '${input.last_name}', '${input.title}', '${input.manager_name}');`;
 
             connection.query(query, (err, results) => {
                 if (err) {
@@ -210,41 +291,12 @@ function addingEmployee () {
     });
 }
 
-// Main prompt for choosing categories for what the user wanted to do
-const questionPrompt = [
-    {
-        name: 'employee_tracker',
-        message: 'What would you like to do?',
-        type: "list",
-        choices: ["View all Employees", "Add Employee", "Update Employee Role", "View All Roles","Add Role","View All Departments", "Add Department", "Exit"],
-        validate: (value) => {
-          if(value){
-              return true
-          } else {
-              return 'Must Choose One!. Please Try Again!'
-          }
-        }
-    },
-];
-
-// function for viewing the table for department, roles, and employees
-function promptCategories() {
-    
-    return inquirer.prompt(questionPrompt).then((input) => {
-        //connection to the database
-        const connection = mysql.createConnection (
-            {
-                host: 'localhost',
-                user: 'root',
-                password: 'password',
-                database: 'employee_tracker'
-            }
-        );
-
-        // Viewing all employees table
-        if(input.employee_tracker == "View all Employees"){
-
-            const query = 'SELECT * FROM employees;';
+// function for view all employees
+function viewAllEmployees() {
+    const query = `SELECT employees.id, employees.first_name, employees.last_name, roles.title AS job_title, roles.salary AS salary, department.dept_name AS department, employees.manager_name 
+            FROM employees 
+            JOIN roles ON employees.role_id = roles.id
+            JOIN department ON roles.department_id = department.id;`;
 
             connection.query(query, (err, results) => {
                 if(err) {
@@ -261,22 +313,13 @@ function promptCategories() {
                         return promptCategories();
                     })
             })
-        } 
+}
 
-        // Adding Employee 
-        if(input.employee_tracker == "Add Employee"){
-            addingEmployee();
-        } 
-
-        // Updating Employee
-        if(input.employee_tracker == "Update Employee Role"){
-            console.log('Updating Employee Role!');
-        } 
-
-        // Viewing all roles
-        if(input.employee_tracker == "View All Roles"){
-            const query = 'SELECT * FROM roles;';
-
+// function for viewing all roles
+function viewAllRoles() {
+    const query = `SELECT roles.id, roles.title, roles.salary, department.dept_name AS department
+            FROM roles
+            JOIN department ON roles.department_id = department.id;`;
             connection.query(query, (err, results) => {
                 if(err) {
                     console.log('error!')
@@ -291,16 +334,12 @@ function promptCategories() {
                         return promptCategories();
                     })
             })
-        } 
+}
 
-        // Adding Roles
-        if(input.employee_tracker == "Add Role"){
-            departmentChoice(); // Call the function here 
-        } 
-
-        // Viewing all departments
-        if(input.employee_tracker == "View All Departments"){
-            const query = 'SELECT * FROM department;';
+// function to view all departments
+function viewAllDepartments() {
+    const query = `SELECT department.id, department.dept_name AS department
+                    FROM department;`;
 
             connection.query(query, (err, results) => {
                 if(err) {
@@ -317,6 +356,54 @@ function promptCategories() {
                         return promptCategories();
                     })
             })
+}
+
+// Main prompt for choosing categories for what the user wanted to do
+const questionPrompt = [
+    {
+        name: 'employee_tracker',
+        message: 'What would you like to do?',
+        type: "list",
+        choices: () => {
+            const choices = ["View all Employees", "Add Employee", "Update Employee Role", "View All Roles","Add Role","View All Departments", "Add Department", "Exit"];
+            return choices;
+        },
+    },
+];
+
+// function for viewing the table for department, roles, and employees
+function promptCategories() {
+    
+    return inquirer.prompt(questionPrompt).then((input) => {
+    
+        // Viewing all employees table
+        if(input.employee_tracker == "View all Employees"){
+            viewAllEmployees();
+        } 
+
+        // Adding Employee 
+        if(input.employee_tracker == "Add Employee"){
+            addingEmployee();
+        } 
+
+        // Updating Employee
+        if(input.employee_tracker == "Update Employee Role"){
+            updatingEmployee();
+        } 
+
+        // Viewing all roles
+        if(input.employee_tracker == "View All Roles"){
+            viewAllRoles();
+        } 
+
+        // Adding Roles
+        if(input.employee_tracker == "Add Role"){
+            departmentChoice(); // Call the function here 
+        } 
+
+        // Viewing all departments
+        if(input.employee_tracker == "View All Departments"){
+            viewAllDepartments();
         } 
 
         // Adding new Department
@@ -326,8 +413,9 @@ function promptCategories() {
 
         // Completely exiting the program!
         if(input.employee_tracker == "Exit"){
-            console.log('Thank you for using our services!');
+            console.log('Thank you for using employee tracker!');
             connection.end();
+            process.exit();
         };
         
     });
