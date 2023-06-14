@@ -12,6 +12,7 @@ const connection = mysql.createConnection (
     }
 );
 
+// function for adding new role
 function departmentChoice() {
     const query1 = 'SELECT * FROM department;';
 
@@ -83,6 +84,7 @@ function departmentChoice() {
     });
 }
 
+// function for adding new department
 function addingDepartment() {
 
         // Prompting user to add a new department
@@ -124,6 +126,91 @@ function addingDepartment() {
                 })
             }
 
+// function for adding new employee
+function addingEmployee () {
+    const query1 = 'SELECT * FROM roles;';
+
+    connection.query(query1, (err, results) => {
+        if (err) {
+            console.error('Error fetching data:', err);
+            return;
+          }
+        const choice = results.map((row) => row.title);
+
+        inquirer.prompt([
+            {
+                name: 'first_name',
+                message: 'What is the first name of the employee?',
+                type: 'input',
+                validate: (value) => {
+                    if(value){
+                        return true;
+                    } else {
+                        return 'Cannot be blank!. Please Try Typing again';
+                    }
+                }
+            },
+            {
+                name: 'last_name',
+                message: 'What is the last name of the employee?',
+                type: 'input',
+                validate: (value) => {
+                    if(value){
+                        return true;
+                    } else {
+                        return 'Cannot be blank!. Please Try Typing again';
+                    }
+                }
+            },
+            {
+                name: 'title',
+                message: 'What is the title of the employee?',
+                type: 'list',
+                choices: choice
+            },
+            {
+                name: 'manager_name',
+                message: 'What is the name of the manager does this employee reports to?',
+                type: 'input',
+                validate: (value) => {
+                    if(value){
+                        return true;
+                    } else {
+                        return 'Cannot be blank!. Please Try Typing again';
+                    }
+                }
+            }
+        ]).then((input)=>{
+            const query = `INSERT INTO employees(first_name, last_name, role_name, manager_name) VALUES ('${input.first_name}', '${input.last_name}', '${input.title}', '${input.manager_name}');`;
+
+            connection.query(query, (err, results) => {
+                if (err) {
+                    console.error('Error inserting data:', err);
+                    return;
+                  }
+                console.log('Employee Added!');
+                inquirer.prompt([
+                    {
+                        name: 'return',
+                        message: 'Would you like to add another employee?',
+                        type: 'list',
+                        choices: ['Yes', 'No']
+                    }]).then((enter)=> {
+                        if(enter.return == 'Yes'){
+                            addingEmployee();
+                        } else {
+                        return promptCategories();
+                        }
+                    })
+            });
+        }).catch((err) => {
+            console.error('Error during role insertion:', err);
+            promptCategories(); // Go back to the main menu
+          });
+    });
+}
+
+// Main prompt for choosing categories for what the user wanted to do
 const questionPrompt = [
     {
         name: 'employee_tracker',
@@ -140,9 +227,11 @@ const questionPrompt = [
     },
 ];
 
+// function for viewing the table for department, roles, and employees
 function promptCategories() {
     
     return inquirer.prompt(questionPrompt).then((input) => {
+        //connection to the database
         const connection = mysql.createConnection (
             {
                 host: 'localhost',
@@ -151,6 +240,7 @@ function promptCategories() {
                 database: 'employee_tracker'
             }
         );
+
         // Viewing all employees table
         if(input.employee_tracker == "View all Employees"){
 
@@ -173,11 +263,12 @@ function promptCategories() {
             })
         } 
 
+        // Adding Employee 
         if(input.employee_tracker == "Add Employee"){
-            console.log('Adding Employee!');
-            connection.end();
+            addingEmployee();
         } 
 
+        // Updating Employee
         if(input.employee_tracker == "Update Employee Role"){
             console.log('Updating Employee Role!');
         } 
@@ -202,6 +293,7 @@ function promptCategories() {
             })
         } 
 
+        // Adding Roles
         if(input.employee_tracker == "Add Role"){
             departmentChoice(); // Call the function here 
         } 
@@ -227,6 +319,7 @@ function promptCategories() {
             })
         } 
 
+        // Adding new Department
         if(input.employee_tracker == "Add Department"){
             addingDepartment();
         }

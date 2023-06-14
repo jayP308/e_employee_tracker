@@ -18,5 +18,6 @@ CREATE TABLE employees (
     id INT PRIMARY KEY NOT NULL AUTO_INCREMENT UNIQUE,
     first_name VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL, 
-    role_id INT NOT NULL
+    role_name VARCHAR(255) NOT NULL,
+    manager_name VARCHAR(255) NOT NULL
 );
