@@ -203,7 +203,67 @@ function updatingEmployee() {
       });
     });
   }
+
+// function for updating manager
+function updatingManager() {
+    const employeesQuery = 'SELECT id, first_name, last_name FROM employees;';
+    
   
+    connection.query(employeesQuery, (err, employeesResults) => {
+      if (err) {
+        console.error('Error fetching employees:', err);
+        return;
+      }
+  
+      const employeesChoices = employeesResults.map((employee) => ({
+        value: employee.id,
+        name: `${employee.first_name} ${employee.last_name}`
+      }));
+  
+        inquirer.prompt([
+          {
+            name: 'employee_id',
+            message: 'Select the employee to update:',
+            type: 'list',
+            choices: employeesChoices
+          },
+          {
+            name: 'new_role_id',
+            message: 'What is the new managers name?',
+            type: 'input'
+          }
+        ]).then((input) => {
+          const updateQuery = `UPDATE employees SET manager_name = ('${input.new_role_id}') WHERE id = ${input.employee_id};`;
+  
+          connection.query(updateQuery, (err, results) => {
+            if (err) {
+              console.error('Error updating data:', err);
+              return;
+            }
+  
+            console.log('Employee role updated!');
+            inquirer.prompt([
+                {
+                    name: 'return',
+                    message: 'Would you like to update another employees role?',
+                    type: 'list',
+                    choices: ['Yes', 'No']
+                }]).then((enter)=> {
+                    if(enter.return == 'Yes'){
+                        updatingManager
+                    } else {
+                    return promptCategories();
+                    }
+                })
+          });
+        }).catch((err) => {
+          console.error('Error during employee role update:', err);
+          promptCategories(); // Go back to the main menu
+        });
+      });
+  }
+  
+
 // function for adding new employee
 function addingEmployee () {
     const query1 = 'SELECT id, title FROM roles;';
@@ -293,7 +353,7 @@ function addingEmployee () {
 
 // function for view all employees
 function viewAllEmployees() {
-    const query = `SELECT employees.id, employees.first_name, employees.last_name, roles.title AS job_title, roles.salary AS salary, department.dept_name AS department, employees.manager_name 
+    const query = `SELECT employees.id, employees.first_name, employees.last_name, roles.title AS job_title, roles.salary AS salary, department.dept_name AS department, employees.manager_name AS manager 
             FROM employees 
             JOIN roles ON employees.role_id = roles.id
             JOIN department ON roles.department_id = department.id;`;
@@ -365,7 +425,7 @@ const questionPrompt = [
         message: 'What would you like to do?',
         type: "list",
         choices: () => {
-            const choices = ["View all Employees", "Add Employee", "Update Employee Role", "View All Roles","Add Role","View All Departments", "Add Department", "Exit"];
+            const choices = ["View all Employees", "Add Employee", "Update Employee Role", "Update Employee's Manager", "View All Roles","Add Role","View All Departments", "Add Department", "Exit"];
             return choices;
         },
     },
@@ -386,9 +446,14 @@ function promptCategories() {
             addingEmployee();
         } 
 
-        // Updating Employee
+        // Updating Employee Role
         if(input.employee_tracker == "Update Employee Role"){
             updatingEmployee();
+        } 
+
+         // Updating Employee Manager
+         if(input.employee_tracker == "Update Employee Manager"){
+            updatingManager();
         } 
 
         // Viewing all roles
