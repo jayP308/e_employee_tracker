@@ -241,29 +241,78 @@ function updatingManager() {
               return;
             }
   
-            console.log('Employee role updated!');
+            console.log('Employee Manager updated!');
             inquirer.prompt([
                 {
                     name: 'return',
-                    message: 'Would you like to update another employees role?',
+                    message: 'Would you like to update another employees manager?',
                     type: 'list',
                     choices: ['Yes', 'No']
                 }]).then((enter)=> {
                     if(enter.return == 'Yes'){
-                        updatingManager
+                        updatingManager();
                     } else {
                     return promptCategories();
                     }
                 })
           });
         }).catch((err) => {
-          console.error('Error during employee role update:', err);
+          console.error('Error during employee manager update:', err);
           promptCategories(); // Go back to the main menu
         });
       });
   }
   
+function deletingEmployee() {
+    const employeesQuery = 'SELECT id, first_name, last_name FROM employees;';
 
+    connection.query(employeesQuery, (err, employeesResults) => {
+        if (err) {
+          console.error('Error fetching employees:', err);
+          return;
+        }
+    const employeesChoices = employeesResults.map((employee) => ({
+        value: employee.id,
+        name: `${employee.first_name} ${employee.last_name}`
+      }));
+
+      inquirer.prompt([
+        {
+          name: 'employee_id',
+          message: 'Select the employee to delete:',
+          type: 'list',
+          choices: employeesChoices
+        }
+      ]).then((input) => {
+        const deleteQuery = `DELETE FROM employees WHERE id = ${input.employee_id};`;
+
+        connection.query(deleteQuery, (err, results) => {
+          if (err) {
+            console.error('Error updating data:', err);
+            return;
+          }
+
+          console.log('Employee deleted!');
+          inquirer.prompt([
+              {
+                  name: 'return',
+                  message: 'Would you like to delete another employee?',
+                  type: 'list',
+                  choices: ['Yes', 'No']
+              }]).then((enter)=> {
+                  if(enter.return == 'Yes'){
+                      deletingEmployee();
+                  } else {
+                  return promptCategories();
+                  }
+              })
+        });
+        }).catch((err) => {
+        console.error('Error during employee delete:', err);
+        promptCategories(); // Go back to the main menu
+        });
+    });
+}
 // function for adding new employee
 function addingEmployee () {
     const query1 = 'SELECT id, title FROM roles;';
@@ -425,7 +474,7 @@ const questionPrompt = [
         message: 'What would you like to do?',
         type: "list",
         choices: () => {
-            const choices = ["View all Employees", "Add Employee", "Update Employee Role", "Update Employee's Manager", "View All Roles","Add Role","View All Departments", "Add Department", "Exit"];
+            const choices = ["View all Employees", "Add Employee", "Update Employee Role", "Update Employee's Manager", "Delete An Employee","View All Roles","Add Role","View All Departments", "Add Department", "Exit"];
             return choices;
         },
     },
@@ -456,6 +505,9 @@ function promptCategories() {
             updatingManager();
         } 
 
+        if(input.employee_tracker == "Delete An Employee"){
+            deletingEmployee();
+        } 
         // Viewing all roles
         if(input.employee_tracker == "View All Roles"){
             viewAllRoles();
