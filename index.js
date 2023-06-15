@@ -262,7 +262,8 @@ function updatingManager() {
         });
       });
   }
-  
+
+// function to delete an employee
 function deletingEmployee() {
     const employeesQuery = 'SELECT id, first_name, last_name FROM employees;';
 
@@ -467,6 +468,55 @@ function viewAllDepartments() {
             })
 }
 
+function viewingByDept() {
+
+    const query1 = 'SELECT id, dept_name FROM department;';
+  
+    connection.query(query1, (err, results) => {
+      if (err) {
+        console.error('Error fetching data:', err);
+        return;
+      }
+      const choice = results.map((row) => ({
+        value: row.id,
+        name: row.dept_name
+      }));
+
+      inquirer.prompt([
+        {
+            name: 'view_by_dept',
+            message: 'What is the department you like to view?',
+            type: 'list',
+            choices: choice
+        }]).then ((input) => {
+            const departmentId = input.view_by_dept;
+            const query = `
+              SELECT employees.id, employees.first_name, employees.last_name, roles.title AS job_title, roles.salary AS salary, department.dept_name AS department, employees.manager_name AS manager
+              FROM employees
+              JOIN roles ON employees.role_id = roles.id
+              JOIN department ON roles.department_id = department.id
+              WHERE department.id = ${departmentId}
+              ORDER BY department.dept_name, employees.last_name, employees.first_name;`;
+
+        connection.query(query, (err, results) => {
+        if(err) {
+            console.log('error!')
+        }
+        const table = tableTemp.getTable(results)
+        console.log(table);
+        //Lets user know to press enter to go back to the list instead of the list re-prompting right away
+        inquirer.prompt([
+            {
+                name: 'return',
+                message: 'Press Enter To Go Back to Main Menu'
+            }]).then((enter)=> {
+                return promptCategories();
+            })
+        })
+        })
+    })
+}
+
 // Main prompt for choosing categories for what the user wanted to do
 const questionPrompt = [
     {
@@ -474,7 +524,7 @@ const questionPrompt = [
         message: 'What would you like to do?',
         type: "list",
         choices: () => {
-            const choices = ["View all Employees", "Add Employee", "Update Employee Role", "Update Employee's Manager", "Delete An Employee","View All Roles","Add Role","View All Departments", "Add Department", "Exit"];
+            const choices = ["View all Employees", "Add Employee", "Update Employee Role", "Update Employee's Manager", "Delete An Employee", "View Employee By Department", "View All Roles","Add Role","View All Departments", "Add Department", "Exit"];
             return choices;
         },
     },
@@ -505,9 +555,16 @@ function promptCategories() {
             updatingManager();
         } 
 
+        // Deleting an employee
         if(input.employee_tracker == "Delete An Employee"){
             deletingEmployee();
         } 
+
+        // View employee by department
+        if(input.employee_tracker == "View Employee By Department"){
+            viewingByDept();
+        } 
+
         // Viewing all roles
         if(input.employee_tracker == "View All Roles"){
             viewAllRoles();
