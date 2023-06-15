@@ -23,8 +23,11 @@ Link: 'git@github.com:jayP308/e_employee_tracker.git'
 ## Test
 Inside the app with terminal open, run "node server.js" and questions where user can choose a category of what to do will be displayed and will be prompt series of questions base on the user chosen category.
 
-Tutorial Video
-<img src="./videos/employee_tracker_tutorial.webm" />
+Tutorial Video Link
+https://drive.google.com/file/d/1UKSN7cxNl8tiPddzBDtyisRRPO9PPcYj/view
+
+Tutorial Preview
+<img src="./videos/employee_tracker_tutorial_sample.gif" />
 
 ## Contributors
 Junnel R. Padilla, UC Berkeley Bootcamp Modules
