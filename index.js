@@ -512,7 +512,19 @@ function viewingByDept() {
                 name: 'return',
                 message: 'Press Enter To Go Back to Main Menu'
             }]).then((enter)=> {
-                return promptCategories();
+                inquirer.prompt([
+                    {
+                        name: 'return',
+                        message: 'Would you like to view another department?',
+                        type: 'list',
+                        choices: ['Yes', 'No']
+                    }]).then((enter)=> {
+                        if(enter.return == 'Yes'){
+                            viewingByDept();
+                        } else {
+                        return promptCategories();
+                        }
+                    })
             })
         })
         })
@@ -557,7 +569,7 @@ function promptCategories() {
 
         // if statements with call back function inside
          // Updating Employee Manager
-         if(input.employee_tracker == "Update Employee Manager"){
+         if(input.employee_tracker == "Update Employee's Manager"){
             updatingManager();
         } 
 
