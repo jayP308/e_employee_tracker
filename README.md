@@ -27,7 +27,7 @@ Tutorial Video Link
 https://drive.google.com/file/d/1UKSN7cxNl8tiPddzBDtyisRRPO9PPcYj/view
 
 Tutorial Preview
-<img src="./videos/employee_tracker_tutorial_sample.gif" />
+<img src="./employee_tracker_tutorial_sample.gif" />
 
 ## Contributors
 Junnel R. Padilla, UC Berkeley Bootcamp Modules
