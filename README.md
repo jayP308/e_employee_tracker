@@ -26,9 +26,6 @@ Inside the app with terminal open, run "node server.js" and questions where user
 Tutorial Video Link
 https://drive.google.com/file/d/1UKSN7cxNl8tiPddzBDtyisRRPO9PPcYj/view
 
-Tutorial Preview
-! [Alt text] (./employee_tracker_tutorial_sample.gif)
-
 ## Contributors
 Junnel R. Padilla, UC Berkeley Bootcamp Modules
   
