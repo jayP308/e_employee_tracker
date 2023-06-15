@@ -468,6 +468,8 @@ function viewAllDepartments() {
             })
 }
 
+
+// function for user to view employees by departments
 function viewingByDept() {
 
     const query1 = 'SELECT id, dept_name FROM department;';
@@ -535,56 +537,67 @@ function promptCategories() {
     
     return inquirer.prompt(questionPrompt).then((input) => {
     
+        // if statements with call back function inside
         // Viewing all employees table
         if(input.employee_tracker == "View all Employees"){
             viewAllEmployees();
         } 
 
+        // if statements with call back function inside
         // Adding Employee 
         if(input.employee_tracker == "Add Employee"){
             addingEmployee();
         } 
 
+        // if statements with call back function inside
         // Updating Employee Role
         if(input.employee_tracker == "Update Employee Role"){
             updatingEmployee();
         } 
 
+        // if statements with call back function inside
          // Updating Employee Manager
          if(input.employee_tracker == "Update Employee Manager"){
             updatingManager();
         } 
 
+        // if statements with call back function inside
         // Deleting an employee
         if(input.employee_tracker == "Delete An Employee"){
             deletingEmployee();
         } 
 
+        // if statements with call back function inside
         // View employee by department
         if(input.employee_tracker == "View Employee By Department"){
             viewingByDept();
         } 
 
+        // if statements with call back function inside
         // Viewing all roles
         if(input.employee_tracker == "View All Roles"){
             viewAllRoles();
         } 
 
+        // if statements with call back function inside
         // Adding Roles
         if(input.employee_tracker == "Add Role"){
             departmentChoice(); // Call the function here 
         } 
 
+        // if statements with call back function inside
         // Viewing all departments
         if(input.employee_tracker == "View All Departments"){
             viewAllDepartments();
         } 
 
+        // if statements with call back function inside
         // Adding new Department
         if(input.employee_tracker == "Add Department"){
             addingDepartment();
         }
 
+        // if statements with call back function inside
         // Completely exiting the program!
         if(input.employee_tracker == "Exit"){
             console.log('Thank you for using employee tracker!');
